@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Last.fm Top Track</title>
+</head>
+<body>
+  <h1>🎧 Last.fm Top Track (Local)</h1>
+
+  <form action="/top-track" method="post">
+    <label for="username">Last.fm username:</label>
+    <input id="username" name="username" required
+           value="{{ username if username else '' }}" />
+    <button type="submit">Get top track</button>
+  </form>
+
+  {% if result %}
+    <hr />
+    <h2>Result</h2>
+    <p>{{ result }}</p>
+  {% endif %}
+</body>
+</html>
