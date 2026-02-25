@@ -22,6 +22,6 @@ else:
     track = top.item             # pylast.Track
     playcount = top.weight       # usually playcount
 
-    print("✅ Most scrobbled track (overall):")
+    print("Most scrobbled track (overall):")
     print(f"{track.artist.name} — {track.title}")
     print(f"Plays: {playcount}")
