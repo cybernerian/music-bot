@@ -1,0 +1,51 @@
+[server]
+enableStaticServing = true
+
+[[theme.fontFaces]]
+family="arnold-bocklin"
+url="app/static/arnold-bocklin.ttf"
+style="normal"
+weight=400
+
+[[theme.fontFaces]]
+family="vipnagorgialla-rg"
+url="app/static/vipnagorgialla-rg.otf"
+style="normal"
+weight=400
+
+[theme]
+base="dark"
+primaryColor="#FF8A28"
+backgroundColor="#000000"
+secondaryBackgroundColor="#111111"
+textColor="#FFFFFF"
+
+# - - - - - - - -
+# Atomic Orange
+orangeColor="#FF8A28"
+orangeBackgroundColor="#2A1405"
+orangeTextColor="#FF8A28"
+
+# Iris Purple
+violetColor="#5D3FD3"
+violetBackgroundColor="#1E183D"
+violetTextColor="#5D3FD3"
+
+# Chartreuse
+greenColor="7fff00"
+greenBackgroundColor="#1E183D"
+greenTextColor="7fff00"
+
+# Orangered
+redColor="ff4500"
+redBackgroundColor="ff4500"
+redTextColor="ff4500"
+# - - - - - - - -
+
+# - - - - - - - -
+# Vipnagorgialla for body text (st.write)
+font="vipnagorgialla-rg"
+
+# Arnold Bocklin for headings (st.title, st.header)
+headingFont="arnold-bocklin"
+# - - - - - - - -
