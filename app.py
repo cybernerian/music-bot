@@ -2,6 +2,7 @@ import os
 import streamlit as st
 
 from lastfm_client import get_recent_tracks, get_top_tracks_week, get_top_genre_week
+from baseline_model import build_network, get_top_tracks, recommend_from_similar
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -71,3 +72,23 @@ if top_genre:
         f"Top genre: :orange[**{top_genre['genre']}**]")
 else:
     st.write("No top genre found.")
+
+#Display recommendations from baseline_model
+st.divider()
+
+if st.button("Get Recommendations"):
+    network = build_network()
+    user = network.get_user(username)
+
+    top_tracks = get_top_tracks(user, limit=10, period="overall")
+    recs = recommend_from_similar(top_tracks, per_seed=10, out_k=10)
+
+    st.title(":green[Recommended Songs]")
+
+    if recs:
+        for i, tr in enumerate(recs, start=1):
+            st.markdown(
+                f"{i}. :orange[**{tr.artist.name}**] — :orange[{tr.title}]"
+            )
+    else:
+        st.write("No recommendations found.")
