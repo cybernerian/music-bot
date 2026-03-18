@@ -15,16 +15,16 @@ weight=400
 
 [theme]
 base="dark"
-primaryColor="#FF8A28"
-backgroundColor="#000000"
+primaryColor="#53af4a"
+backgroundColor="#17191c"
 secondaryBackgroundColor="#111111"
 textColor="#FFFFFF"
 
 # - - - - - - - -
-# Atomic Orange
-orangeColor="#FF8A28"
+# Darker Green
+orangeColor="#53af4a"
 orangeBackgroundColor="#2A1405"
-orangeTextColor="#FF8A28"
+orangeTextColor="#6fb541"
 
 # Iris Purple
 violetColor="#5D3FD3"
@@ -32,9 +32,9 @@ violetBackgroundColor="#1E183D"
 violetTextColor="#5D3FD3"
 
 # Chartreuse
-greenColor="7fff00"
+greenColor="#9ff058"
 greenBackgroundColor="#1E183D"
-greenTextColor="7fff00"
+greenTextColor="#9ff058"
 
 # Orangered
 redColor="ff4500"
