@@ -42,3 +42,15 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# MusicBrainz data (too large for git)
+database/musicbrainz-data/
+
+# macOS
+.DS_Store
+__MACOSX/
+
+# Claude
+.claude/
+
+# Streamlit
+.streamlit/secrets.toml
