@@ -1,12 +1,78 @@
-# placeholder until database implementation later
+import os
+import psycopg2
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def get_conn():
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST", "localhost"),
+        port=os.getenv("DB_PORT", 5533),
+        dbname=os.getenv("DB_NAME", "music_recommender"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+    )
+
 
 def init_db():
-    pass
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS feedback (
+                    id SERIAL PRIMARY KEY,
+                    username TEXT NOT NULL,
+                    artist TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    rating TEXT NOT NULL CHECK (rating IN ('loved', 'liked', 'disliked', 'hated')),
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+            """)
+        conn.commit()
 
 
-def save_feedback(username: str, artist: str, title: str, liked: bool):
-    pass
+def save_feedback(username: str, artist: str, title: str, rating: str):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO feedback (username, artist, title, rating)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT DO NOTHING
+            """, (username, artist, title, rating))
+        conn.commit()
+
+
+def get_feedback(username: str) -> list:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, artist, title, rating, created_at FROM feedback
+                WHERE username = %s
+                ORDER BY created_at DESC
+            """, (username,))
+            rows = cur.fetchall()
+    return [{"id": r[0], "artist": r[1], "title": r[2], "rating": r[3], "created_at": r[4]} for r in rows]
+
+
+def delete_feedback(entry_id: int):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM feedback WHERE id = %s", (entry_id,))
+        conn.commit()
 
 
 def get_feedback_summary(username: str) -> dict:
-    return {"liked": 0, "disliked": 0}
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT rating, COUNT(*) FROM feedback
+                WHERE username = %s
+                GROUP BY rating
+            """, (username,))
+            rows = cur.fetchall()
+
+    counts = {"loved": 0, "liked": 0, "disliked": 0, "hated": 0}
+    for rating, count in rows:
+        counts[rating] = count
+    counts["liked"] = counts["loved"] + counts["liked"]
+    counts["disliked"] = counts["disliked"] + counts["hated"]
+    return counts

@@ -1,6 +1,7 @@
 import os
+import random
 import streamlit as st
-from baseline_model import build_network, get_top_tracks, recommend_from_similar
+from baseline_model import build_network, build_seeds, get_listened_set, recommend_from_similar
 from db import init_db, save_feedback, get_feedback_summary
 from dotenv import load_dotenv
 
@@ -8,7 +9,7 @@ load_dotenv()
 init_db()
 
 st.set_page_config(
-    page_title="Recommendations – Music Recommender",
+    page_title="Recommendations – Music Bot",
     page_icon="🎵",
     layout="centered"
 )
@@ -17,6 +18,7 @@ st.markdown("""
     <style>
         [data-testid="stSidebar"] {display: none;}
         [data-testid="collapsedControl"] {display: none;}
+        button p { white-space: nowrap !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -33,54 +35,91 @@ if "recs" not in st.session_state:
 if "feedback_given" not in st.session_state:
     st.session_state.feedback_given = {}
 
+if "pending_toast" not in st.session_state:
+    st.session_state.pending_toast = None
+
+if st.session_state.pending_toast:
+    st.toast(st.session_state.pending_toast)
+    st.session_state.pending_toast = None
+
+# @st.cache_data(ttl=86400)  # 1 day
+def fetch_rec_pool(username):
+    network = build_network()
+    user = network.get_user(username)
+    seeds = build_seeds(user)
+    listened = get_listened_set(user)
+    pool = recommend_from_similar(seeds, per_seed=10, out_k=15, listened=listened)
+    return [{"artist": tr.artist.name, "title": tr.title} for tr in pool]
+
 # Fetch recommendations on page load
 if not st.session_state.recs:
     with st.spinner("Finding recommendations..."):
-        network = build_network()
-        user = network.get_user(username)
-        top_tracks = get_top_tracks(user, limit=5, period="overall")
-        raw_recs = recommend_from_similar(top_tracks, per_seed=5, out_k=5)
+        pool = fetch_rec_pool(username)
+        raw_recs = random.sample(pool, min(3, len(pool)))
 
-    st.session_state.recs = [
-        {"artist": tr.artist.name, "title": tr.title}
-        for tr in raw_recs
-    ]
+    st.session_state.recs = raw_recs
     st.session_state.feedback_given = {}
 
 # Display recommendations
 if st.session_state.recs:
     st.title(":green[Recommended Songs]")
-    st.caption("Provide feedback to improve future recommenadtions!")
+    st.markdown("Solely based on your Last.fm listening history using the Last.fm similarity API.")
+    st.markdown("Provide feedback to improve future recommendations!")
 
     for i, rec in enumerate(st.session_state.recs, start=1):
         artist = rec["artist"]
         title = rec["title"]
         key = f"{artist}::{title}"
 
-        col_label, col_like, col_dislike = st.columns([6, 1, 1])
+        col_label, col_love, col_like, col_dislike, col_hate = st.columns([4, 1, 1, 1.1, 1])
 
         with col_label:
             st.markdown(f"{i}. :orange[**{artist}**] — :orange[{title}]")
 
         current = st.session_state.feedback_given.get(key)
 
+        with col_love:
+            if st.button("Love", key=f"love_{key}", type="primary" if current == "loved" else "secondary"):
+                if current != "loved":
+                    save_feedback(username, artist, title, rating="loved")
+                    st.session_state.feedback_given[key] = "loved"
+                    st.session_state.pending_toast = f'"{title}" added to loved list'
+                    st.rerun()
+
         with col_like:
-            if current == "liked":
-                st.markdown("✅")
-            else:
-                if st.button("👍", key=f"like_{key}"):
-                    save_feedback(username, artist, title, liked=True)
+            if st.button("Like", key=f"like_{key}", type="primary" if current == "liked" else "secondary"):
+                if current != "liked":
+                    save_feedback(username, artist, title, rating="liked")
                     st.session_state.feedback_given[key] = "liked"
+                    st.session_state.pending_toast = f'"{title}" added to liked list'
                     st.rerun()
 
         with col_dislike:
-            if current == "disliked":
-                st.markdown("❌")
-            else:
-                if st.button("👎", key=f"dislike_{key}"):
-                    save_feedback(username, artist, title, liked=False)
+            if st.button("Dislike", key=f"dislike_{key}", type="primary" if current == "disliked" else "secondary"):
+                if current != "disliked":
+                    save_feedback(username, artist, title, rating="disliked")
                     st.session_state.feedback_given[key] = "disliked"
+                    st.session_state.pending_toast = f'"{title}" added to disliked list'
                     st.rerun()
+
+        with col_hate:
+            if st.button("Hate", key=f"hate_{key}", type="primary" if current == "hated" else "secondary"):
+                if current != "hated":
+                    save_feedback(username, artist, title, rating="hated")
+                    st.session_state.feedback_given[key] = "hated"
+                    st.session_state.pending_toast = f'"{title}" added to hated list'
+                    st.rerun()
+
+    # Music Bot placeholder
+    st.divider()
+    st.title(":green[Music Bot]")
+    st.markdown(
+        "In addition to your Last.fm listening history, your feedback from recommended songs is also included. "
+        "The more feedback you give, the more Music Bot will improve."
+    )
+
+    if st.button("View feedback you gave"):
+        st.switch_page("pages/manage_feedback.py")
 
     # Feedback summary
     summary = get_feedback_summary(username)
@@ -89,16 +128,23 @@ if st.session_state.recs:
         st.divider()
         st.markdown(
             f"**Total feedback recorded:** "
-            f":green[{summary['liked']} 👍] · "
-            f":red[{summary['disliked']} 👎] "
+            f":green[{summary['liked']} liked] · "
+            f":red[{summary['disliked']} disliked] "
             f"({total} total)"
         )
         st.caption(
             "This feedback will be used to improve future recommendations. Thank you!"
         )
 
-# Back button
+# Back / Refresh buttons
 st.divider()
-if st.button("← Back"):
-    st.session_state.recs = []
-    st.switch_page("app.py")
+col_back, col_spacer, col_refresh = st.columns([1, 1, 2])
+with col_back:
+    if st.button("← Back", use_container_width=True):
+        st.session_state.recs = []
+        st.switch_page("app.py")
+with col_refresh:
+    if st.button("Refresh Recommendations", use_container_width=True):
+        st.session_state.recs = []
+        st.session_state.feedback_given = {}
+        st.rerun()

@@ -9,7 +9,7 @@ load_dotenv()
 
 # Page config
 st.set_page_config(
-    page_title="Music Recommender",
+    page_title="Music Bot",
     page_icon="🎵",
     layout="centered"
 )
@@ -21,7 +21,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 username = os.getenv("LASTFM_USERNAME")
-st.title(":green[Music Recommender]")
+st.title(":green[Music Bot]")
 st.markdown(
     f"Welcome, :orange[{username}]! Here's your personalized music dashboard.",
 )
