@@ -1,8 +1,8 @@
 import os
 import random
 import streamlit as st
-from baseline_model import build_network, build_seeds, get_listened_set, recommend_from_similar
-from db import init_db, save_feedback, get_feedback_summary
+from recommendation_page.lastfm_similarity_model import build_network, build_seeds, get_listened_set, recommend_from_similar
+from song_feedback_db import init_db, save_feedback, get_feedback_summary
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -119,7 +119,7 @@ if st.session_state.recs:
     )
 
     if st.button("View feedback you gave"):
-        st.switch_page("pages/manage_feedback.py")
+        st.switch_page("pages/manage_song_feedback.py")
 
     # Feedback summary
     summary = get_feedback_summary(username)

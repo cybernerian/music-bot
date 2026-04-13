@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 
-from lastfm_client import get_recent_tracks, get_top_tracks_week, get_top_genre_week
+from homepage.dashboard import get_recent_tracks, get_top_tracks_week, get_top_genre_week
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -79,4 +79,4 @@ else:
 
 #redirect to recommendations page
 if st.button("Get Recommendations"):
-    st.switch_page("pages/recommendations.py")
+    st.switch_page("pages/lastfm_song_recommendations.py")

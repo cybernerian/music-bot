@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from db import get_feedback, delete_feedback
+from song_feedback_db import get_feedback, delete_feedback
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -77,4 +77,4 @@ else:
 
 st.divider()
 if st.button("← Back to Recommendations"):
-    st.switch_page("pages/recommendations.py")
+    st.switch_page("pages/lastfm_song_recommendations.py")
