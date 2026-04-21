@@ -1,18 +1,6 @@
 [server]
 enableStaticServing = true
 
-[[theme.fontFaces]]
-family="arnold-bocklin"
-url="app/static/arnold-bocklin.ttf"
-style="normal"
-weight=400
-
-[[theme.fontFaces]]
-family="vipnagorgialla-rg"
-url="app/static/vipnagorgialla-rg.otf"
-style="normal"
-weight=400
-
 [theme]
 base="dark"
 primaryColor="#53af4a"
@@ -37,15 +25,18 @@ greenBackgroundColor="#1E183D"
 greenTextColor="#9ff058"
 
 # Orangered
-redColor="ff4500"
-redBackgroundColor="ff4500"
-redTextColor="ff4500"
+redColor="#ff4500"
+redBackgroundColor="#ff4500"
+redTextColor="#ff4500"
 # - - - - - - - -
 
 # - - - - - - - -
 # Vipnagorgialla for body text (st.write)
-font="vipnagorgialla-rg"
+# font="vipnagorgialla-rg"
 
 # Arnold Bocklin for headings (st.title, st.header)
-headingFont="arnold-bocklin"
+# headingFont="arnold-bocklin"
+
+# Custom fonts and color palette are applied via styles.py
+# since Streamlit does not support these config keys natively.
 # - - - - - - - -

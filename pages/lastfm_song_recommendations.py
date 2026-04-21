@@ -2,8 +2,10 @@ import os
 import random
 import streamlit as st
 from recommendation_page.lastfm_similarity_model import build_network, build_seeds, get_listened_set, recommend_from_similar
-from song_feedback_db import init_db, save_feedback, get_feedback_summary
+from recommendation_page.feedback_model import build_user_profile
+from song_feedback_db import init_db, save_feedback, get_feedback, get_feedback_summary
 from dotenv import load_dotenv
+from styles import apply_styles, dg, lg
 
 load_dotenv()
 init_db()
@@ -13,19 +15,12 @@ st.set_page_config(
     page_icon="🎵",
     layout="centered"
 )
-
-st.markdown("""
-    <style>
-        [data-testid="stSidebar"] {display: none;}
-        [data-testid="collapsedControl"] {display: none;}
-        button p { white-space: nowrap !important; }
-    </style>
-""", unsafe_allow_html=True)
+apply_styles()
 
 username = os.getenv("LASTFM_USERNAME")
 
-st.title(":green[Recommendations]")
-st.markdown(f"Personalized picks for :orange[{username}].")
+st.title("Recommendations")
+st.markdown(f"Personalized picks for {lg(username)}.", unsafe_allow_html=True)
 st.divider()
 
 # Store recommendations in session state
@@ -34,6 +29,9 @@ if "recs" not in st.session_state:
 
 if "feedback_given" not in st.session_state:
     st.session_state.feedback_given = {}
+
+if "personalized" not in st.session_state:
+    st.session_state.personalized = False
 
 if "pending_toast" not in st.session_state:
     st.session_state.pending_toast = None
@@ -48,22 +46,29 @@ def fetch_rec_pool(username):
     user = network.get_user(username)
     seeds = build_seeds(user)
     listened = get_listened_set(user)
-    pool = recommend_from_similar(seeds, per_seed=10, out_k=15, listened=listened)
-    return [{"artist": tr.artist.name, "title": tr.title} for tr in pool]
 
-# Fetch recommendations on page load
+    feedback_records = get_feedback(username)
+    user_profile = build_user_profile(feedback_records, network)
+
+    pool = recommend_from_similar(seeds, per_seed=10, out_k=15, listened=listened, user_profile=user_profile)
+    return [{"artist": tr.artist.name, "title": tr.title} for tr in pool], bool(user_profile)
+
 if not st.session_state.recs:
     with st.spinner("Finding recommendations..."):
-        pool = fetch_rec_pool(username)
+        pool, personalized = fetch_rec_pool(username)
         raw_recs = random.sample(pool, min(3, len(pool)))
 
     st.session_state.recs = raw_recs
+    st.session_state.personalized = personalized
     st.session_state.feedback_given = {}
 
 # Display recommendations
 if st.session_state.recs:
-    st.title(":green[Recommended Songs]")
-    st.markdown("Solely based on your Last.fm listening history using the Last.fm similarity API.")
+    st.title("Recommended Songs")
+    if st.session_state.get("personalized"):
+        st.markdown(f"Personalized using your Last.fm history {lg('**and**')} your feedback.", unsafe_allow_html=True)
+    else:
+        st.markdown("Based on your Last.fm listening history. Provide feedback to personalize future recommendations!")
     st.markdown("Provide feedback to improve future recommendations!")
 
     for i, rec in enumerate(st.session_state.recs, start=1):
@@ -74,7 +79,7 @@ if st.session_state.recs:
         col_label, col_love, col_like, col_dislike, col_hate = st.columns([4, 1, 1, 1.1, 1])
 
         with col_label:
-            st.markdown(f"{i}. :orange[**{artist}**] — :orange[{title}]")
+            st.markdown(f"{i}. {dg(artist, bold=True)} — {dg(title)}", unsafe_allow_html=True)
 
         current = st.session_state.feedback_given.get(key)
 
@@ -112,7 +117,7 @@ if st.session_state.recs:
 
     # Music Bot placeholder
     st.divider()
-    st.title(":green[Music Bot]")
+    st.title("Music Bot")
     st.markdown(
         "In addition to your Last.fm listening history, your feedback from recommended songs is also included. "
         "The more feedback you give, the more Music Bot will improve."

@@ -3,6 +3,7 @@ import random
 from collections import defaultdict
 from dotenv import load_dotenv
 import pylast
+from recommendation_page.feedback_model import personalization_multiplier
 
 #Baseline music recommendation system using Last.fm similarity API
 
@@ -99,6 +100,14 @@ def _artist_listeners(artist) -> int:
         return 0
 
 
+def _artist_top_tags(artist) -> list:
+    try:
+        tags = artist.get_top_tags(limit=10)
+        return [t.item.name.strip().lower() for t in tags]
+    except Exception:
+        return []
+
+
 def _artist_top_track_keys(artist) -> list:
     # returns ordered list of normalized keys for the artist's top 10 tracks
     try:
@@ -124,7 +133,7 @@ def _score_multiplier(big_artist: bool, track_rank: int) -> float:
         return 1.1       # deep cut from small artist — slight discovery boost
 
 
-def recommend_from_similar(top_tracks, per_seed: int = 10, out_k: int = 10, listened: set = None):
+def recommend_from_similar(top_tracks, per_seed: int = 10, out_k: int = 10, listened: set = None, user_profile: dict = None):
     if listened is None:
         listened = set()
     for tr in top_tracks:
@@ -155,6 +164,7 @@ def recommend_from_similar(top_tracks, per_seed: int = 10, out_k: int = 10, list
                 artist_cache[artist_name] = {
                     "listeners": _artist_listeners(sim_track.artist),
                     "top_keys": _artist_top_track_keys(sim_track.artist),
+                    "tags": _artist_top_tags(sim_track.artist),
                 }
 
             cached = artist_cache[artist_name]
@@ -163,6 +173,8 @@ def recommend_from_similar(top_tracks, per_seed: int = 10, out_k: int = 10, list
             track_rank = top_keys.index(key) if key in top_keys else -1
 
             s *= _score_multiplier(big_artist, track_rank)
+            if user_profile:
+                s *= personalization_multiplier(artist_name, cached["tags"], user_profile)
 
             scores[key] += s
             track_objs[key] = sim_track

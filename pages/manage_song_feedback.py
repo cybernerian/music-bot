@@ -2,6 +2,7 @@ import os
 import streamlit as st
 from song_feedback_db import get_feedback, delete_feedback
 from dotenv import load_dotenv
+from styles import apply_styles
 
 load_dotenv()
 
@@ -10,18 +11,11 @@ st.set_page_config(
     page_icon="🎵",
     layout="centered"
 )
-
-st.markdown("""
-    <style>
-        [data-testid="stSidebar"] {display: none;}
-        [data-testid="collapsedControl"] {display: none;}
-        button p { white-space: nowrap !important; }
-    </style>
-""", unsafe_allow_html=True)
+apply_styles()
 
 username = os.getenv("LASTFM_USERNAME")
 
-st.title(":green[Your Feedback]")
+st.title("Your Feedback")
 st.markdown("Manually remove entries if needed.")
 st.divider()
 
