@@ -3,6 +3,7 @@ import random
 import streamlit as st
 from recommendation_page.lastfm_similarity_model import build_network, build_seeds, get_listened_set, recommend_from_similar
 from recommendation_page.feedback_model import build_user_profile
+from recommendation_page.musicbrainz_fetcher import recommend_from_musicbrainz
 from song_feedback_db import init_db, save_feedback, get_feedback, get_feedback_summary
 from dotenv import load_dotenv
 from styles import apply_styles, dg, lg
@@ -76,7 +77,7 @@ if st.session_state.recs:
         title = rec["title"]
         key = f"{artist}::{title}"
 
-        col_label, col_love, col_like, col_dislike, col_hate = st.columns([4, 1, 1, 1.1, 1])
+        col_label, col_love, col_like, col_neutral, col_dislike, col_hate = st.columns([4, 1, 1, 1, 1.1, 1])
 
         with col_label:
             st.markdown(f"{i}. {dg(artist, bold=True)} — {dg(title)}", unsafe_allow_html=True)
@@ -99,6 +100,14 @@ if st.session_state.recs:
                     st.session_state.pending_toast = f'"{title}" added to liked list'
                     st.rerun()
 
+        with col_neutral:
+            if st.button("Neutral", key=f"neutral_{key}", type="primary" if current == "neutral" else "secondary"):
+                if current != "neutral":
+                    save_feedback(username, artist, title, rating="neutral")
+                    st.session_state.feedback_given[key] = "neutral"
+                    st.session_state.pending_toast = f'"{title}" marked as neutral'
+                    st.rerun()
+
         with col_dislike:
             if st.button("Dislike", key=f"dislike_{key}", type="primary" if current == "disliked" else "secondary"):
                 if current != "disliked":
@@ -115,13 +124,85 @@ if st.session_state.recs:
                     st.session_state.pending_toast = f'"{title}" added to hated list'
                     st.rerun()
 
-    # Music Bot placeholder
+    # Music Bot section
     st.divider()
     st.title("Music Bot")
     st.markdown(
         "In addition to your Last.fm listening history, your feedback from recommended songs is also included. "
         "The more feedback you give, the more Music Bot will improve."
     )
+
+    if "mb_recs" not in st.session_state:
+        st.session_state.mb_recs = []
+
+    if "mb_feedback_given" not in st.session_state:
+        st.session_state.mb_feedback_given = {}
+
+    if not st.session_state.mb_recs:
+        if st.button("Generate Music Bot Recommendations", use_container_width=True):
+            with st.spinner("Finding Music Bot recommendations..."):
+                network = build_network()
+                user = network.get_user(username)
+                seeds = build_seeds(user)
+                listened = get_listened_set(user)
+                feedback_records = get_feedback(username)
+                user_profile = build_user_profile(feedback_records, network)
+                st.session_state.mb_recs = recommend_from_musicbrainz(seeds, out_k=3, listened=listened, user_profile=user_profile)
+                st.session_state.mb_feedback_given = {}
+            st.rerun()
+
+    if st.session_state.mb_recs:
+        for i, rec in enumerate(st.session_state.mb_recs, start=1):
+            artist = rec["artist"]
+            title = rec["title"]
+            key = f"mb::{artist}::{title}"
+
+            col_label, col_love, col_like, col_neutral, col_dislike, col_hate = st.columns([4, 1, 1, 1, 1.1, 1])
+
+            with col_label:
+                st.markdown(f"{i}. {dg(artist, bold=True)} — {dg(title)}", unsafe_allow_html=True)
+
+            current = st.session_state.mb_feedback_given.get(key)
+
+            with col_love:
+                if st.button("Love", key=f"mb_love_{key}", type="primary" if current == "loved" else "secondary"):
+                    if current != "loved":
+                        save_feedback(username, artist, title, rating="loved", source="musicbrainz")
+                        st.session_state.mb_feedback_given[key] = "loved"
+                        st.session_state.pending_toast = f'"{title}" added to loved list'
+                        st.rerun()
+
+            with col_like:
+                if st.button("Like", key=f"mb_like_{key}", type="primary" if current == "liked" else "secondary"):
+                    if current != "liked":
+                        save_feedback(username, artist, title, rating="liked", source="musicbrainz")
+                        st.session_state.mb_feedback_given[key] = "liked"
+                        st.session_state.pending_toast = f'"{title}" added to liked list'
+                        st.rerun()
+
+            with col_neutral:
+                if st.button("Neutral", key=f"mb_neutral_{key}", type="primary" if current == "neutral" else "secondary"):
+                    if current != "neutral":
+                        save_feedback(username, artist, title, rating="neutral", source="musicbrainz")
+                        st.session_state.mb_feedback_given[key] = "neutral"
+                        st.session_state.pending_toast = f'"{title}" marked as neutral'
+                        st.rerun()
+
+            with col_dislike:
+                if st.button("Dislike", key=f"mb_dislike_{key}", type="primary" if current == "disliked" else "secondary"):
+                    if current != "disliked":
+                        save_feedback(username, artist, title, rating="disliked", source="musicbrainz")
+                        st.session_state.mb_feedback_given[key] = "disliked"
+                        st.session_state.pending_toast = f'"{title}" added to disliked list'
+                        st.rerun()
+
+            with col_hate:
+                if st.button("Hate", key=f"mb_hate_{key}", type="primary" if current == "hated" else "secondary"):
+                    if current != "hated":
+                        save_feedback(username, artist, title, rating="hated", source="musicbrainz")
+                        st.session_state.mb_feedback_given[key] = "hated"
+                        st.session_state.pending_toast = f'"{title}" added to hated list'
+                        st.rerun()
 
     if st.button("View feedback you gave"):
         st.switch_page("pages/manage_song_feedback.py")
@@ -151,5 +232,7 @@ with col_back:
 with col_refresh:
     if st.button("Refresh Recommendations", use_container_width=True):
         st.session_state.recs = []
+        st.session_state.mb_recs = []
         st.session_state.feedback_given = {}
+        st.session_state.mb_feedback_given = {}
         st.rerun()

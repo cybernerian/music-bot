@@ -5,6 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 RATING_WEIGHTS = {
     "loved": 2.0,
     "liked": 1.0,
+    "neutral": 0.1,
     "disliked": -1.0,
     "hated": -2.0,
 }

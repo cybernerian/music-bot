@@ -132,6 +132,19 @@ def _score_multiplier(big_artist: bool, track_rank: int) -> float:
             return 1.3   # mid-tier from small artist
         return 1.1       # deep cut from small artist — slight discovery boost
 
+# FROM SONGS LAST FM RECOMMEND GET THERE GENRE TAGS
+# SEE `fetch_candidates_by_tags()` FO RHOW THERE USED
+def extract_tags_from_seeds(seeds: list) -> list[str]:
+    # Collect tags from each seed track's artist, deduplicated
+    seen = set()
+    tags = []
+    for track in seeds:
+        for tag in _artist_top_tags(track.artist):
+            if tag not in seen:
+                seen.add(tag)
+                tags.append(tag)
+    return tags
+
 
 def recommend_from_similar(top_tracks, per_seed: int = 10, out_k: int = 10, listened: set = None, user_profile: dict = None):
     if listened is None:

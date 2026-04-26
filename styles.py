@@ -22,8 +22,6 @@ def apply_styles():
                 font-family: 'arnold-bocklin', sans-serif !important;
                 color: #9ff058 !important;
             }
-            [data-testid="stSidebar"] { display: none; }
-            [data-testid="collapsedControl"] { display: none; }
             button p { white-space: nowrap !important; }
         </style>
     """, unsafe_allow_html=True)

@@ -32,7 +32,9 @@ if not entries:
 else:
     for entry in entries:
         entry_id = entry["id"]
-        label = f"**{entry['artist']}** — {entry['title']}  |  *{entry['rating']}*"
+        source_label = "Music Bot" if entry.get("source") == "musicbrainz" else "Last.fm"
+        date_label = entry["created_at"].strftime("%-m/%-d/%Y") if entry.get("created_at") else ""
+        label = f"**{entry['artist']}** — {entry['title']}  |  *{entry['rating']}*  |  {source_label}  |  {date_label}"
         is_selected = st.session_state.selected_entry == entry_id
 
         col_label, col_trash = st.columns([8, 1])
