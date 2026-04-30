@@ -80,7 +80,7 @@ def get_top_genre_week(username: str, sample_tracks: int = 10):
     """
     Approximates "top genre" for the last 7 days by:
     1) Taking top tracks from last 7 days (sample_tracks)
-    2) Fetching Last.fm top tags for each track
+    2) Fetching Last.fm top tags for each track's artist
     3) Counting tag frequency
     Returns:
       { "genre": str, "count": int } or None
@@ -91,13 +91,23 @@ def get_top_genre_week(username: str, sample_tracks: int = 10):
     top = user.get_top_tracks(limit=sample_tracks, period="7day")
 
     tag_counts = {}
+    seen_artists = set()
 
     for item in top:
         track_obj = item.item
-        try:
-            tags = track_obj.get_top_tags(limit=5)
-        except Exception:
+        artist_name = track_obj.artist.name.strip().lower()
+
+        if artist_name in seen_artists:
             continue
+        seen_artists.add(artist_name)
+
+        try:
+            tags = track_obj.artist.get_top_tags(limit=5)
+        except Exception:
+            try:
+                tags = track_obj.get_top_tags(limit=5)
+            except Exception:
+                continue
 
         for tag_item in tags:
             try:

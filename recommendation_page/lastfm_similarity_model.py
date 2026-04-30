@@ -45,7 +45,7 @@ def build_seeds(user: pylast.User) -> list:
         if normalize_key(t.artist.name, t.title) not in recent_keys
     ][:3]
 
-    # 10% artist-level — 1 seed: top track from a similar artist
+    # 15% artist-level — 1 seed: top track from a similar artist
     artist_seed = []
     try:
         top_artists = user.get_top_artists(limit=5)
@@ -60,7 +60,7 @@ def build_seeds(user: pylast.User) -> list:
     except Exception:
         pass
 
-    # 10% wildcard — 1 seed: random track from ranks 10-30 overall
+    # 5% wildcard — 1 seed: random track from ranks 10-30 overall
     wildcard = []
     try:
         deep = get_top_tracks(user, limit=30, period="overall")
@@ -121,16 +121,16 @@ def _score_multiplier(big_artist: bool, track_rank: int) -> float:
     # track_rank: 0-2 = top 3 (popular), 3-6 = mid, 7-9 = deep cut, -1 = not in top 10
     if big_artist:
         if track_rank in (0, 1, 2):
-            return 0.6   # mega-hit from big artist — penalize
+            return 0.55  # mega-hit from big artist — penalize
         if track_rank in (3, 4, 5, 6):
             return 1.2   # mid-tier from big artist
         return 1.5       # deep cut from big artist — prioritize
     else:
         if track_rank in (0, 1, 2):
-            return 1.5   # best-known from small artist — good entry point
+            return 1.7   # best-known from small artist — stronger discovery push
         if track_rank in (3, 4, 5, 6):
-            return 1.3   # mid-tier from small artist
-        return 1.1       # deep cut from small artist — slight discovery boost
+            return 1.4   # mid-tier from small artist
+        return 1.2       # deep cut from small artist — slight discovery boost
 
 # FROM SONGS LAST FM RECOMMEND GET THERE GENRE TAGS
 # SEE `fetch_candidates_by_tags()` FO RHOW THERE USED

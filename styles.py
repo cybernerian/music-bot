@@ -8,6 +8,18 @@ def apply_styles():
     st.markdown("""
         <style>
             @font-face {
+                font-family: 'triplicate-c3';
+                src: url('/app/static/triplicate-c3.ttf') format('truetype');
+                font-weight: 400;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: 'triplicate-c3';
+                src: url('/app/static/triplicate-c3-bold.ttf') format('truetype');
+                font-weight: 400;
+                font-style: normal;
+            }
+            @font-face {
                 font-family: 'arnold-bocklin';
                 src: url('/app/static/arnold-bocklin.ttf') format('truetype');
             }
@@ -15,14 +27,50 @@ def apply_styles():
                 font-family: 'vipnagorgialla-rg';
                 src: url('/app/static/vipnagorgialla-rg.otf') format('opentype');
             }
-            html, body, [class*="css"] {
-                font-family: 'vipnagorgialla-rg', sans-serif !important;
+            html, body, .stApp, p, li, a, span, label, input, textarea, button, code, pre, .stMarkdown, .stMarkdown p, .stMarkdown li, .stMarkdown span, .stMarkdown a, .stMarkdown strong, .stMarkdown em, div[data-testid="stMarkdownContainer"] p, div[data-testid="stMarkdownContainer"] li, div[data-testid="stMarkdownContainer"] span, div[data-testid="stMarkdownContainer"] a, div[data-testid="stMarkdownContainer"] strong, div[data-testid="stMarkdownContainer"] em {
+                font-family: Consolas, monospace !important;
+                font-size: 1.00rem !important;
+            }
+            table, th, td, thead, tbody, tr {
+                font-family: Consolas, monospace !important;
             }
             h1, h2, h3, h4, h5, h6 {
-                font-family: 'arnold-bocklin', sans-serif !important;
+                font-family: 'vipnagorgialla-rg', sans-serif !important;
+                font-weight: 600 !important;
                 color: #9ff058 !important;
             }
-            button p { white-space: nowrap !important; }
+            div[data-testid="stButton"] > button {
+                background: rgba(255, 255, 255, 0.02) !important;
+                border: 1px solid rgba(255, 255, 255, 0.22) !important;
+                color: #f2f2f2 !important;
+                border-radius: 6px !important;
+                box-shadow: none !important;
+                font-family: Consolas, monospace !important;
+                min-height: 2.4rem !important;
+                height: auto !important;
+                padding: 0.35rem 0.75rem !important;
+                transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+            }
+            div[data-testid="stButton"] > button:hover {
+                background: rgba(159, 240, 88, 0.06) !important;
+                border-color: rgba(159, 240, 88, 0.75) !important;
+                color: #9ff058 !important;
+            }
+            div[data-testid="stButton"] > button:focus,
+            div[data-testid="stButton"] > button:active {
+                box-shadow: 0 0 0 1px rgba(159, 240, 88, 0.28) !important;
+            }
+            div[data-testid="stButton"] > button[kind="primary"] {
+                background: rgba(159, 240, 88, 0.08) !important;
+                border-color: rgba(159, 240, 88, 0.9) !important;
+                color: #9ff058 !important;
+            }
+            div[data-testid="stButton"] > button p {
+                white-space: normal !important;
+                overflow-wrap: anywhere !important;
+                word-break: break-word !important;
+                line-height: 1.25 !important;
+            }
         </style>
     """, unsafe_allow_html=True)
 
