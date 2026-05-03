@@ -44,19 +44,21 @@ def build_user_profile(feedback_records: list, network) -> dict:
 
     tag_index = {tag: i for i, tag in enumerate(vocab)}
 
+    # Genre preference vector uses positive ratings only — disliking an artist
+    # shouldn't penalize the whole genre, just that artist and similar ones
     pref_vector = np.zeros(len(vocab))
     total_weight = 0.0
 
     for record in feedback_records:
         weight = RATING_WEIGHTS.get(record["rating"], 0.0)
-        if weight == 0:
+        if weight <= 0:
             continue
         vec = np.zeros(len(vocab))
         for tag in artist_tags_map.get(record["artist"], []):
             if tag in tag_index:
                 vec[tag_index[tag]] = 1.0
         pref_vector += weight * vec
-        total_weight += abs(weight)
+        total_weight += weight
 
     if total_weight > 0:
         pref_vector /= total_weight

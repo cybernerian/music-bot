@@ -68,7 +68,7 @@ class MusicBrainzTester:
 
         if not songs:
             print(f"No recordings found for genre '{genre}'.")
-            print("The sample database may not have tag data for that genre — try re-running.")
+            print("Try re-running or check that the full database finished loading correctly.")
         else:
             for i, song in enumerate(songs, 1):
                 print(f"{i:2}. {song['title']} — {song['artist']}")

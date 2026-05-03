@@ -8,6 +8,18 @@ def apply_styles():
     st.markdown("""
         <style>
             @font-face {
+                font-family: 'Consolas';
+                src: url('/app/static/consolas.woff') format('woff');
+                font-weight: 400;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: 'Consolas';
+                src: url('/app/static/consolas-bold.woff') format('woff');
+                font-weight: 700;
+                font-style: normal;
+            }
+            @font-face {
                 font-family: 'triplicate-c3';
                 src: url('/app/static/triplicate-c3.ttf') format('truetype');
                 font-weight: 400;
@@ -16,27 +28,19 @@ def apply_styles():
             @font-face {
                 font-family: 'triplicate-c3';
                 src: url('/app/static/triplicate-c3-bold.ttf') format('truetype');
-                font-weight: 400;
+                font-weight: 700;
                 font-style: normal;
             }
-            @font-face {
-                font-family: 'arnold-bocklin';
-                src: url('/app/static/arnold-bocklin.ttf') format('truetype');
-            }
-            @font-face {
-                font-family: 'vipnagorgialla-rg';
-                src: url('/app/static/vipnagorgialla-rg.otf') format('opentype');
-            }
             html, body, .stApp, p, li, a, span, label, input, textarea, button, code, pre, .stMarkdown, .stMarkdown p, .stMarkdown li, .stMarkdown span, .stMarkdown a, .stMarkdown strong, .stMarkdown em, div[data-testid="stMarkdownContainer"] p, div[data-testid="stMarkdownContainer"] li, div[data-testid="stMarkdownContainer"] span, div[data-testid="stMarkdownContainer"] a, div[data-testid="stMarkdownContainer"] strong, div[data-testid="stMarkdownContainer"] em {
-                font-family: Consolas, monospace !important;
+                font-family: 'triplicate-c3', monospace !important;
                 font-size: 1.00rem !important;
             }
             table, th, td, thead, tbody, tr {
-                font-family: Consolas, monospace !important;
+                font-family: 'triplicate-c3', monospace !important;
             }
             h1, h2, h3, h4, h5, h6 {
-                font-family: 'vipnagorgialla-rg', sans-serif !important;
-                font-weight: 600 !important;
+                font-family: 'Consolas', monospace !important;
+                font-weight: 700 !important;
                 color: #9ff058 !important;
             }
             div[data-testid="stButton"] > button {
@@ -45,7 +49,7 @@ def apply_styles():
                 color: #f2f2f2 !important;
                 border-radius: 6px !important;
                 box-shadow: none !important;
-                font-family: Consolas, monospace !important;
+                font-family: 'triplicate-c3', monospace !important;
                 min-height: 2.4rem !important;
                 height: auto !important;
                 padding: 0.35rem 0.75rem !important;
